@@ -1,8 +1,13 @@
 const express = require('express');
 const app = express();
 
+const connectDB = require('./config/db');
 
+// connect DB
+connectDB();
 
+// Init middleware
+app.use(express.json({ extended: false }));
 
 
 // set port
