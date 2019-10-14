@@ -29,7 +29,7 @@ router.post('/register', async (req, res) => {
     try {
 
         // validate api params
-        const { error } =  apiParamsSchema.validate({ username, password });
+        const { error } = apiParamsSchema.validate({ username, password });
         if (error) {
             return res.status(400).json({
                 success: false,
@@ -38,7 +38,7 @@ router.post('/register', async (req, res) => {
         }
 
         // check username in database before creating new user
-        let user = await User.findOne({username})
+        let user = await User.findOne({ username })
         if (user) {
             return res.status(400).json({
                 success: false,
@@ -61,7 +61,7 @@ router.post('/register', async (req, res) => {
 
         // save user into database
         await user.save()
-        
+
         // create jsonwebtoken
         const payload = {
             user: {
@@ -90,6 +90,72 @@ router.post('/register', async (req, res) => {
         });
     }
 
+});
+
+// @route    POST api/v1/user/login
+// @desc     Login user
+// @access   Public
+router.post('/login', async (req, res) => {
+
+    // destructure username and password
+    const { username, password } = req.body;
+
+    // validate api params
+    const { error } = apiParamsSchema.validate({ username, password });
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+
+    try {
+        // find user
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide valid username"
+            });
+        }
+
+        // compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid password"
+            });
+        }
+
+        // create jsonwebtoken
+        const payload = {
+            user: {
+                username: user.username,
+                id: user._id
+            }
+        };
+
+        const token = await jwt.sign(payload, JWT_SECRET, {
+            expiresIn: "365d"
+        });
+
+        // send response
+        return res.json({
+            success: true,
+            token,
+            username: user.username,
+            _id: user._id
+        });
+
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 module.exports = router;
