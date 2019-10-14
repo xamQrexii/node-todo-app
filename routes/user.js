@@ -98,7 +98,9 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
 
     // destructure username and password
-    const { username, password } = req.body;
+    let { username, password } = req.body;
+    // lowercase username
+    username = username.toLowerCase();
 
     // validate api params
     const { error } = apiParamsSchema.validate({ username, password });
