@@ -15,7 +15,7 @@ const TodoSchema = new Schema({
         required: true,
         default: false
     },
-    user: {
+    createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
