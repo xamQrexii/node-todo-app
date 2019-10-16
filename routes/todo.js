@@ -11,6 +11,32 @@ const auth = require('../middlewares/auth');
 // @access   Private
 router.get('/get-tasks', auth, async (req, res) => {
 
+    try {
+        
+        // let tasks = await Todo.find({}).populate('createdBy').find({ createdBy: {$in: req.user.id} });
+        const tasks = await Todo.find({ createdBy: { $in: req.user.id } }).populate('createdBy', { password: 0 });
+
+        // check tasks if not created by user
+        if (tasks.length < 1) {
+            return res.json({
+                success: true,
+                message: "You have not created any task yet!"
+            });
+        }
+
+        return res.json({
+            success: true,
+            tasks
+        });
+
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            success: false,
+            error: error.message
+        });
+    }
 
 });
 
@@ -19,7 +45,7 @@ router.get('/get-tasks', auth, async (req, res) => {
 // @access   Private
 router.post('/create-task', auth, async (req, res) => {
 
-  
+
 
 });
 
@@ -35,7 +61,7 @@ router.put('/update-task/:id', auth, async (req, res) => {
 // @desc     delete task
 // @access   Private
 router.delete('/delete-task/:id', auth, async (req, res) => {
-    
+
 });
 
 module.exports = router;
