@@ -5,6 +5,13 @@ const Joi = require('@hapi/joi');
 const Todo = require('../models/Todo');
 const auth = require('../middlewares/auth');
 
+// create API params schema for validation
+const postApiParamsSchema = Joi.object({
+    title: Joi.string().required(),
+    description: Joi.string().required(),
+    isCompleted: Joi.bool()
+});
+
 
 // @route    GET api/v1/todo/get-tasks
 // @desc     Get tasks
@@ -12,7 +19,7 @@ const auth = require('../middlewares/auth');
 router.get('/get-tasks', auth, async (req, res) => {
 
     try {
-        
+
         // let tasks = await Todo.find({}).populate('createdBy').find({ createdBy: {$in: req.user.id} });
         const tasks = await Todo.find({ createdBy: { $in: req.user.id } }).populate('createdBy', { password: 0 });
 
@@ -45,7 +52,46 @@ router.get('/get-tasks', auth, async (req, res) => {
 // @access   Private
 router.post('/create-task', auth, async (req, res) => {
 
+    // destructure body
+    const { title, description, isCompleted } = req.body;
 
+    // validate api params
+    const { error } = postApiParamsSchema.validate({ title, description, isCompleted });
+    if (error) {
+        return res.status(400).json({
+            success: false,
+            message: error.details[0].message
+        });
+    }
+
+    try {
+        // create task
+        let task = await new Todo({
+            title,
+            description,
+            createdBy: req.user.id,
+            isCompleted: isCompleted ? isCompleted : false
+        });
+
+        // save task to database
+        await task.save();
+        // populate created task
+        task = await task.populate('createdBy', { password: 0 }).execPopulate();
+
+        return res.json({
+            success: true,
+            message: 'Task created successfully',
+            task
+        });
+
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            success: false,
+            error: error.message
+        });
+    }
 
 });
 
