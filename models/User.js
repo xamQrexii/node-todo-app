@@ -5,12 +5,14 @@ const UserSchema = new Schema({
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        trim: true,
+        lowercase: true
     },
     password: {
         type: String,
         required: true,
-        min: 8
+        minlength: 8,
     }
 }, {
     timestamps: true
