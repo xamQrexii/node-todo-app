@@ -4,11 +4,13 @@ const Schema = mongoose.Schema;
 const TodoSchema = new Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     isCompleted: {
         type: Boolean,
