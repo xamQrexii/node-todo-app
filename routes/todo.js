@@ -162,6 +162,30 @@ router.put('/update-task/:id', auth, async (req, res) => {
 // @access   Private
 router.delete('/delete-task/:id', auth, async (req, res) => {
 
+    // validate object ID
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (!isValidObjectId) {
+        return res.status(400).json({ success: false, message: 'Invalid Object ID' });
+    }
+
+    try {
+        // search task in database
+        const deletedTask = await Todo.findByIdAndDelete(req.params.id);
+        if (!deletedTask) {
+            return res.status(400).json({ success: false, message: 'Task not found' });
+        }
+
+        return res.json({ success: true, message: 'Task deleted successfully!' });
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(500).json({
+            message: "Internal server error",
+            success: false,
+            error: error.message40520
+
+        });
+    }
+
 });
 
 module.exports = router;
