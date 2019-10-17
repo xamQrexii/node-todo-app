@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Joi = require('@hapi/joi');
+const mongoose = require('mongoose');
 
 const Todo = require('../models/Todo');
 const auth = require('../middlewares/auth');
@@ -10,6 +11,12 @@ const postApiParamsSchema = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().required(),
     isCompleted: Joi.bool()
+});
+
+const putApiParamsSchema = Joi.object({
+    title: Joi.string(),
+    description: Joi.string(),
+    isCompleted: Joi.boolean()
 });
 
 
@@ -100,6 +107,55 @@ router.post('/create-task', auth, async (req, res) => {
 // @access   Private
 router.put('/update-task/:id', auth, async (req, res) => {
 
+    // validate objectID
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(req.params.id);
+    if (!isValidObjectId) {
+        return res.status(400).json({ success: false, message: 'Invalid object id' });
+    }
+
+    // check allowed params
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ["title", "description", "isCompleted"];
+    const isValidOperations = updates.every((update) => allowedUpdates.includes(update));
+    if (!isValidOperations) {
+        return res.status(400).json({ success: false, message: 'Invalid API Paramaters' });
+    }
+
+    // check empty body 
+    if (Object.keys(req.body).length < 1) {
+        return res.status(400).json({ success: false, message: 'Fields required in body' });
+    }
+
+    // validate api params for empty values
+    const { error } = putApiParamsSchema.validate(req.body);
+    if (error) {
+        return res.status(400).send({
+            success: false,
+            message: error.details
+        });
+    }
+
+
+
+
+    try {
+        const updatedTask = await Todo.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        if (!updatedTask) {
+            return res.status(404).json({ success: false, message: 'Task not found' });
+        }
+
+        return res.json({
+            success: true,
+            updatedTask
+        });
+    } catch (error) {
+        console.log('Error:', error.message);
+        res.status(400).json({
+            message: "Internal server error",
+            success: false,
+            error: error.message
+        });
+    }
 
 });
 
