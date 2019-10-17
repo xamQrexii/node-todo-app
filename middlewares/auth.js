@@ -4,7 +4,7 @@ const config = require('config');
 const User = require('../models/User');
 
 // environment variable setup
-const JWT_SECRET = process.env.JWT_SETRET || config.get('JWT_SECRET');
+const JWT_SECRET = process.env.JWT_SECRET || config.get('JWT_SECRET');
 
 module.exports = async (req, res, next) => {
 
