@@ -14,6 +14,8 @@ app.use(express.json({ extended: false }));
 // Init routes
 app.use('/api/v1/user', user);
 app.use('/api/v1/todo', todo)
+// 404 not found
+app.use((req, res) => res.status(404).send({ message: `API route not found: ${req.hostname}${req.url}` }));
 
 
 // set port
