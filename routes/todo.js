@@ -131,15 +131,12 @@ router.put('/update-task/:id', auth, async (req, res) => {
     if (error) {
         return res.status(400).send({
             success: false,
-            message: error.details
+            message: error.details[0].message
         });
     }
 
-
-
-
     try {
-        const updatedTask = await Todo.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updatedTask = await Todo.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!updatedTask) {
             return res.status(404).json({ success: false, message: 'Task not found' });
         }
@@ -150,10 +147,11 @@ router.put('/update-task/:id', auth, async (req, res) => {
         });
     } catch (error) {
         console.log('Error:', error.message);
-        res.status(400).json({
+        res.status(500).json({
             message: "Internal server error",
             success: false,
-            error: error.message
+            error: error.message40520
+
         });
     }
 
