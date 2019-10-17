@@ -8,14 +8,14 @@ const auth = require('../middlewares/auth');
 
 // create API params schema for validation
 const postApiParamsSchema = Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().required(),
+    title: Joi.string().trim().required(),
+    description: Joi.string().trim().required(),
     isCompleted: Joi.bool()
 });
 
 const putApiParamsSchema = Joi.object({
-    title: Joi.string(),
-    description: Joi.string(),
+    title: Joi.string().trim(),
+    description: Joi.string().trim(),
     isCompleted: Joi.boolean()
 });
 
